@@ -5,18 +5,37 @@
       <!-- user details column -->
       <div class="form-column">
         <label for="name">Nombre</label>
-        <input type="text" id="name" name="name" v-model="user.data.name" />
+        <input
+          type="text"
+          id="name"
+          name="name"
+          v-model="user.data.name"
+          disabled
+        />
         <label for="surname">Apellidos</label>
         <input
           type="text"
           id="surname"
           name="surname"
           v-model="user.data.surname"
+          disabled
         />
         <label for="email">Email</label>
-        <input type="email" id="email" name="email" v-model="user.data.email" />
+        <input
+          type="email"
+          id="email"
+          name="email"
+          v-model="user.data.email"
+          disabled
+        />
         <label for="phone">Teléfono</label>
-        <input type="tel" id="phone" name="phone" v-model="user.data.phone" />
+        <input
+          type="tel"
+          id="phone"
+          name="phone"
+          v-model="user.data.phone"
+          required
+        />
         <label for="age">Edad</label>
         <input
           type="number"
@@ -35,7 +54,7 @@
           type="number"
           id="loan_amount"
           name="loan_amount"
-          v-model.number="user.data.loan_amount"
+          v-model="user.data.loan_amount"
           min="11"
           max="1000"
           required
@@ -47,6 +66,7 @@
           name="loan_date"
           :min="today()"
           v-model="user.data.loan_date"
+          required
         />
         <label for="loan_weeks">Duración</label>
         <select
@@ -86,7 +106,15 @@
   </div>
   <main-footer />
   <user-not-found v-if="showUserNotFound" />
-  <user-error-data v-if="showUserErrorData" />
+  <user-error-data
+    v-if="showUserErrorData"
+    @close="showUserErrorData = false"
+  />
+  <user-correct-data
+    v-if="showUserCorrectData"
+    @close="showUserCorrectData = false"
+    :user="user"
+  />
 </template>
 
 <script>
@@ -95,6 +123,7 @@ import mainHeader from '@/components/mainHeader.vue';
 import mainFooter from '@/components/mainFooter.vue';
 import userNotFound from '@/views/errorModalViews/userNotFound.vue';
 import userErrorData from '@/views/errorModalViews/userErrorData.vue';
+import userCorrectData from '@/views/errorModalViews/userCorrectData.vue';
 
 export default {
   name: 'mainPage',
@@ -103,6 +132,7 @@ export default {
     mainFooter,
     userNotFound,
     userErrorData,
+    userCorrectData,
   },
   props: {
     id: {
@@ -114,15 +144,14 @@ export default {
     return {
       showUserNotFound: false,
       showUserErrorData: false,
-      closeErrorModal: '',
+      showUserCorrectData: false,
+      closeModal: '',
       user: null,
     };
   },
   created() {
     this.getUsers();
-    // console.log('heeelloooo', this.$route.params.id);
   },
-  computed: {},
   methods: {
     openUserNotFound() {
       this.showUserNotFound = true;
@@ -133,9 +162,10 @@ export default {
     openUserErrorData() {
       this.showUserErrorData = true;
     },
-    closeUserErrorData() {
-      this.showUserErrorData = false;
+    openUserCorrectData() {
+      this.showUserCorrectData = true;
     },
+
     async getUsers() {
       try {
         const response = await axios.get(
@@ -178,10 +208,10 @@ export default {
           }
         );
         this.user = response.data;
-        this.closeUserErrorData();
+        this.openUserCorrectData();
       } catch (error) {
         if (error.response.status === 400) {
-          console.log('esto es error post', error.response.data);
+          this.openUserErrorData();
         }
       }
     },
@@ -206,6 +236,7 @@ export default {
 
 <style scoped>
 .form-content {
+  height: 80vh;
   display: flex;
   justify-content: center;
 }
@@ -299,6 +330,9 @@ a:hover {
   .form-column {
     width: 50%;
     clear: both;
+  }
+  .form-content {
+    height: 100%;
   }
 }
 </style>
